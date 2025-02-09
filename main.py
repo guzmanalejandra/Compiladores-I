@@ -7,7 +7,7 @@ from Simulaciones.simulaciones import simulationNFA
 if __name__ == "__main__":
     correcta = False
     while not correcta:
-        option = input("\nDesea: 1.Crear AFN .Salir\n>>")
+        option = input("\nDesea: 1.Crear AFN 2.Salir\n>>")
         if not option == "2":
             expresion = input ("\nIngrese la expresión, por favor: ")
             if firstExpresion(expresion):
@@ -37,8 +37,12 @@ if __name__ == "__main__":
                     simulation = True
                     while simulation:
                         option = input ("¿Desea realizar otra simulacion?\n1.Sí   2.No\n>> ")
-                        if option == "1":
-                            simulation = False
+                        if option == "2":  
+                            simulation = False 
+                        elif option == "1":  
+                            pass
+                        else:
+                            print("Opción inválida. Por favor seleccione 1 o 2")
                 else:
                     print("Opcion equivocada")
             else: 
