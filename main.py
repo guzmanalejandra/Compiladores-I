@@ -36,11 +36,12 @@ if __name__ == "__main__":
                     dictTrans = result.getDict()
                     simulation = True
                     while simulation:
-                        option = input ("¿Desea realizar otra simulacion?\n1.Sí   2.No\n>> ")
+                        option = input("¿Desea realizar otra simulacion?\n1.Sí   2.No\n>> ").strip()
                         if option == "2":  
                             simulation = False 
                         elif option == "1":  
-                            pass
+                            cadena = input("\nIngrese la cadena a evaluar: ").strip()
+                            simulationNFA(s0, sf, cadena, dictTrans, alphabet)
                         else:
                             print("Opción inválida. Por favor seleccione 1 o 2")
                 else:

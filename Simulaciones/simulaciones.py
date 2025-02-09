@@ -3,34 +3,31 @@
 # Retorna los estados alcanzables desde el nodo dado, incluyendo transiciones ε
 
 
-def eCerradura(dictionary, finalNode, node):
-     # Si el nodo dado es el nodo final, no se realiza ninguna acción
-    if not finalNode == node:
-        falseStates = []
-        # Si el nodo es una lista de estados, se agrega cada estado a falseStates
-        if type(node) == list:
-            for i in node:
-                falseStates.append(i)
-        else:
-            falseStates.append(node)
-        # Se itera sobre cada estado en falseStates
-        for i in falseStates:
-            if not i == finalNode:
-                # Se obtiene el diccionario de transiciones para el estado i
-                subDict = dictionary[i]
-                key = list(subDict.keys())
-                 # Si la primera clave es ε, se agrega cada valor como estado alcanzable
-                if key[0] == "ε":
-                    values = list(subDict.values())[0]
-                    if type(values) == list:
-                        for k in values:
-                            if k not in falseStates:
-                                falseStates.append(k)
-                    else:
-                        if values not in falseStates:
-                            falseStates.append(values)
-        # Retorna la lista de estados alcanzables desde el nodo dado
-        return falseStates
+def eCerradura(dictionary, states, initial):
+    if not isinstance(states, list):
+        states = [states]  # Convertir un estado único en lista
+    
+    stack = states.copy()
+    eClosure = set(stack)  # Usamos un set para evitar duplicados
+    
+    while stack:
+        state = stack.pop()
+        if state in dictionary:  # Verificar si el estado existe en el diccionario
+            transitions = dictionary[state]
+            if 'ε' in transitions:
+                # Manejar tanto valores únicos como listas para transiciones epsilon
+                epsilon_transitions = transitions['ε']
+                if isinstance(epsilon_transitions, list):
+                    next_states = epsilon_transitions
+                else:
+                    next_states = [epsilon_transitions]
+                
+                for next_state in next_states:
+                    if next_state not in eClosure:
+                        stack.append(next_state)
+                        eClosure.add(next_state)
+    
+    return list(eClosure)
 
 # Función move: implementa la operación de mover
 # Recibe un diccionario (representación de un NFA), un nodo final, un conjunto de estados,
@@ -76,22 +73,48 @@ def move(dictionary,finalNode,states,label):
 # Función simulationNFA: implementa la simulación de un NFA
 # Recibe un diccionario (representación de un NFA), un estado inicial, un estado final,
 
-def simulationNFA(dictionary, initial, final, expresion, alphabet):
-    S = []
-    # Se inicializa la lista de estados
-    S.append(sorted(eCerradura(dictionary,final,initial)))
-    # Se agrega a la lista el estado inicial del NFA y su correspondiente e-cerradura
-    #print("Se parte desde el estado ",S[0],"\nla expresion es: ",expresion)
-    # Se inicializa un contador para ir agregando estados a la lista S
-    cont = 0
-    # Se recorre la cadena de entrada
-    for i in expresion:
-        # Si el caracter pertenece al alfabeto del NFA
-        if i in alphabet:
-            # Se agrega a la lista S el estado obtenido al hacer la transición con el caracter i y su correspondiente e-cerradura
-            S.append(sorted(move(dictionary,final,S[cont],i)))
-            cont = cont +1 
-            # Si el caracter no pertenece al alfabeto del NFA, se devuelve "No"
-        else: 
-            return "No"
+def simulationNFA(initial, final, string, dictionary, alphabet):
+    print("\n---------- SIMULACIÓN NFA ----------")
+    print("Cadena a evaluar:", string)
+    
+    # Verificar que la cadena solo contenga símbolos del alfabeto
+    for char in string:
+        if char not in alphabet:
+            print(f"Error: El carácter '{char}' no está en el alfabeto {alphabet}")
+            return False
+    
+    current_states = eCerradura(dictionary, initial, initial)
+    print("Estados iniciales (después de ε-cerradura):", current_states)
+    
+    # Procesar cada símbolo de la cadena
+    for char in string:
+        next_states = set()
+        for state in current_states:
+            if state in dictionary and char in dictionary[state]:
+                value = dictionary[state][char]
+                # Manejar tanto valores únicos como listas
+                if isinstance(value, list):
+                    next_states.update(value)
+                else:
+                    next_states.add(value)
+        
+        # Aplicar ε-cerradura a todos los estados alcanzados
+        temp_states = set()
+        for state in next_states:
+            temp_states.update(eCerradura(dictionary, state, initial))
+        current_states = list(temp_states)
+        
+        if not current_states:
+            print(f"La cadena es rechazada (no hay transiciones válidas para '{char}')")
+            return False
+        
+        print(f"Estados después de procesar '{char}':", current_states)
+    
+    # Verificar si algún estado final es alcanzable
+    if final in current_states:
+        print("La cadena es aceptada")
+        return True
+    else:
+        print("La cadena es rechazada (no termina en estado final)")
+        return False
 
