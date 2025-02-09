@@ -23,7 +23,11 @@ if __name__ == "__main__":
                     print("Dict con el NFA resultante:\n",nfaDict) 
                     prueba = graph(postfixexp,result)
                     transitions = prueba.createTransitions()
-                    prueba.graphic(transitions,"Thompson")
+                    try:
+                        prueba.graphic(transitions,"Thompson")
+                    except Exception as e:
+                        print("Error al generar el gráfico: Asegúrate de tener Graphviz instalado y configurado en el PATH")
+                        print("Puedes continuar con el programa...")
                     s0 = result.getInitial()
                     sf = result.getFinal()
                     states = prueba.getStates()
